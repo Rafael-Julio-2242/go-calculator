@@ -19,6 +19,14 @@ func Eval(expression []string) (string, error) {
 		return strings.TrimSpace(exp) == ""
 	})
 
+	// Aqui eu preciso ajustar uma forma de buscar pelas operações preferenciais
+
+	specialOps := slices.Contains(expression, "*") || slices.Contains(expression, "/")
+
+	if specialOps {
+
+	}
+
 	for _, s := range expression { // Enquanto o resultado não estiver completo, não retorna nada
 		// De início, fazer as coisas de forma sequencial
 		// Depois a gente adiciona as regras
