@@ -6,7 +6,6 @@ import (
 )
 
 func Sum(a string, b string) (string, error) {
-
 	typeA, typeB, typesErr := VerifyTypes(a, b)
 
 	if typesErr != nil {

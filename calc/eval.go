@@ -2,6 +2,8 @@ package calculator
 
 import (
 	"errors"
+	"slices"
+	"strings"
 )
 
 func Eval(expression []string) (string, error) {
@@ -10,17 +12,40 @@ func Eval(expression []string) (string, error) {
 	var valueB string
 	var signal string
 
-	for i, s := range expression { // Enquanto o resultado não estiver completo, não retorna nada
+	var negative bool
+	var previousExpr string
+
+	expression = slices.DeleteFunc(expression, func(exp string) bool {
+		return strings.TrimSpace(exp) == ""
+	})
+
+	for _, s := range expression { // Enquanto o resultado não estiver completo, não retorna nada
 		// De início, fazer as coisas de forma sequencial
 		// Depois a gente adiciona as regras
 
-		if i%2 == 0 { // É um número
+		if s != "+" && s != "-" && s != "*" && s != "/" {
 			if valueA == "" {
-				valueA = s
+				if negative || previousExpr == "-" {
+					valueA = "-" + s
+					negative = false
+				} else {
+					valueA = s
+				}
 			} else if valueB == "" {
-				valueB = s
+
+				if negative || previousExpr == "-" {
+					valueB = "-" + s
+					negative = false
+				} else {
+					valueB = s
+				}
 			}
-		} else { // É um sinal
+		} else if previousExpr == "-" && s == "-" {
+			signal = "+"
+		} else if (previousExpr == "*" || previousExpr == "/" || previousExpr == "+") && s == "-" {
+			signal = previousExpr
+			negative = true
+		} else {
 			signal = s
 		}
 
@@ -35,31 +60,27 @@ func Eval(expression []string) (string, error) {
 				if err != nil {
 					return "", err
 				}
-				break
 			case "-":
 				tempResult, err = Sub(valueA, valueB)
 
 				if err != nil {
 					return "", err
 				}
-				break
 			case "*":
 				tempResult, err = Multiply(valueA, valueB)
 
 				if err != nil {
 					return "", err
 				}
-				break
 			case "/":
 				tempResult, err = Divide(valueA, valueB)
 
 				if err != nil {
 					return "", err
 				}
-				break
 			default:
-				errors.New("Error: Invalid Operation!")
-				break
+				err = errors.New("error: invalid operation")
+				return "", err
 			}
 
 			valueA = tempResult
@@ -67,6 +88,7 @@ func Eval(expression []string) (string, error) {
 			signal = ""
 		}
 
+		previousExpr = s
 	}
 	return valueA, nil
 }
