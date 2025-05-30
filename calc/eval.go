@@ -2,6 +2,7 @@ package calculator
 
 import (
 	"errors"
+	"fmt"
 	"slices"
 	"strings"
 )
@@ -31,13 +32,33 @@ func Eval(expression []string) (string, error) {
 		var negativeA bool
 		var negativeB bool
 
+		fmt.Println("----------------------------------------------------- ")
+
 		for i, s := range expression {
+
+			fmt.Println("multiply: ", multiply)
+			fmt.Println("divide: ", divide)
+			fmt.Println("specialOpIndex: ", specialOpIndex)
+
+			fmt.Println("negativeA: ", negativeA)
+			fmt.Println("negativeB: ", negativeB)
+
+			fmt.Println("valueA: ", valueA)
+			fmt.Println("valueB: ", valueB)
+			fmt.Println("previousExpr: ", previousExpr)
+			fmt.Println("s: ", s)
+
+			fmt.Println("expression: ", expression)
 
 			if previousExpr == "-" && (s != "-" && s != "+" && s != "*" && s != "/") && valueA == "" {
 				negativeA = true
 			}
 
-			if (s == "*" || s == "/") && valueA != "" {
+			if previousExpr == "-" && (s != "-" && s != "+" && s != "*" && s != "/") && valueA != "" && valueB == "" {
+				negativeB = true
+			}
+
+			if (s == "*" || s == "/") && valueA == "" {
 
 				if previousExpr == "-" || previousExpr == "+" || previousExpr == "*" || previousExpr == "/" {
 					return "", errors.New("invalid expression")
@@ -51,15 +72,15 @@ func Eval(expression []string) (string, error) {
 				}
 				valueA = previousExpr
 				specialOpIndex = i
-			}
 
-			if previousExpr == "-" && (multiply || divide) && valueA != "" && valueB == "" {
-
-				if s == "+" || s == "-" || s == "*" || s == "/" {
-					return "", errors.New("invalid expression")
+				if s == "*" {
+					multiply = true
 				}
 
-				valueB = s
+				if s == "/" {
+					divide = true
+				}
+
 			}
 
 			if (previousExpr == "*" || previousExpr == "/") && valueA != "" {
@@ -90,10 +111,16 @@ func Eval(expression []string) (string, error) {
 					// Pos do valueA é specialOpIndex - 1
 					// Preciso remover as coisas dentro das posições specialOpIndex e specialOpIndex + 1
 
-					slices.Delete(expression, specialOpIndex, specialOpIndex+1)
-					slices.Replace(expression, specialOpIndex-1, specialOpIndex-1, result)
+					expression = slices.Delete(expression, specialOpIndex, specialOpIndex+2)
+					fmt.Println("MULTIPLIED EXPRESSION 1: ", expression)
+
+					expression = slices.Replace(expression, specialOpIndex-1, specialOpIndex, result)
+
+					fmt.Println("MULTIPLIED EXPRESSION 2: ", expression)
 
 					multiply = false
+					valueA = ""
+					valueB = ""
 				}
 
 				if divide {
@@ -106,16 +133,23 @@ func Eval(expression []string) (string, error) {
 					// Pos do valueA é specialOpIndex - 1
 					// Preciso remover as coisas dentro das posições specialOpIndex e specialOpIndex + 1
 
-					slices.Delete(expression, specialOpIndex, specialOpIndex+1)
-					slices.Replace(expression, specialOpIndex-1, specialOpIndex-1, result)
+					expression = slices.Delete(expression, specialOpIndex, specialOpIndex+1)
+					expression = slices.Replace(expression, specialOpIndex-1, specialOpIndex-1, result)
 
 					divide = false
+					valueA = ""
+					valueB = ""
 				}
 
 			}
 
 			previousExpr = s
+			fmt.Println("------------------------------------------------- ")
+
 		}
+		valueA = ""
+		valueB = ""
+		previousExpr = ""
 
 	}
 
