@@ -24,6 +24,98 @@ func Eval(expression []string) (string, error) {
 	specialOps := slices.Contains(expression, "*") || slices.Contains(expression, "/")
 
 	if specialOps {
+		var multiply bool
+		var divide bool
+		var specialOpIndex int
+
+		var negativeA bool
+		var negativeB bool
+
+		for i, s := range expression {
+
+			if previousExpr == "-" && (s != "-" && s != "+" && s != "*" && s != "/") && valueA == "" {
+				negativeA = true
+			}
+
+			if (s == "*" || s == "/") && valueA != "" {
+
+				if previousExpr == "-" || previousExpr == "+" || previousExpr == "*" || previousExpr == "/" {
+					return "", errors.New("invalid expression")
+				}
+
+				if negativeA {
+					valueA = "-" + previousExpr
+					negativeA = false
+				} else {
+					valueA = previousExpr
+				}
+				valueA = previousExpr
+				specialOpIndex = i
+			}
+
+			if previousExpr == "-" && (multiply || divide) && valueA != "" && valueB == "" {
+
+				if s == "+" || s == "-" || s == "*" || s == "/" {
+					return "", errors.New("invalid expression")
+				}
+
+				valueB = s
+			}
+
+			if (previousExpr == "*" || previousExpr == "/") && valueA != "" {
+				if s == "*" || s == "/" || s == "+" {
+					return "", errors.New("invalid expression")
+				}
+				if s == "-" {
+					negativeB = true
+					continue
+				}
+
+				if negativeB {
+					valueB = "-" + s
+				} else {
+					valueB = s
+				}
+			}
+
+			if valueA != "" && valueB != "" {
+
+				if multiply {
+					result, errMult := Multiply(valueA, valueB)
+
+					if errMult != nil {
+						return "", errors.New("error on multiplication")
+					}
+
+					// Pos do valueA é specialOpIndex - 1
+					// Preciso remover as coisas dentro das posições specialOpIndex e specialOpIndex + 1
+
+					slices.Delete(expression, specialOpIndex, specialOpIndex+1)
+					slices.Replace(expression, specialOpIndex-1, specialOpIndex-1, result)
+
+					multiply = false
+				}
+
+				if divide {
+					result, errMult := Divide(valueA, valueB)
+
+					if errMult != nil {
+						return "", errors.New("error on multiplication")
+					}
+
+					// Pos do valueA é specialOpIndex - 1
+					// Preciso remover as coisas dentro das posições specialOpIndex e specialOpIndex + 1
+
+					slices.Delete(expression, specialOpIndex, specialOpIndex+1)
+					slices.Replace(expression, specialOpIndex-1, specialOpIndex-1, result)
+
+					divide = false
+				}
+
+			}
+
+			previousExpr = s
+		}
 
 	}
 
