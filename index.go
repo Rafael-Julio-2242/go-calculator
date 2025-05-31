@@ -7,19 +7,15 @@ import (
 
 func main() {
 
-	input, errInput := calc.Input()
+	testExpression := "2+2*2/2"
 
-	if errInput != nil {
-		fmt.Println("Error in Input! ", errInput)
+	resultExpression, err := calc.ShuntingYard(testExpression)
+
+	if err != nil {
+		fmt.Println("error: ", err)
 		return
 	}
 
-	result, errResult := calc.Eval(input)
-
-	if errResult != nil {
-		fmt.Println("Error on Evaluation expression! ", errResult)
-		return
-	}
-
-	fmt.Println("Result: ", result)
+	fmt.Println("Expected expression: 2 2 2 * 2 / +")
+	fmt.Println("Result Expression: ", resultExpression)
 }
