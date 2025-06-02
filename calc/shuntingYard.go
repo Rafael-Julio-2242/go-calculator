@@ -2,7 +2,6 @@ package calculator
 
 import (
 	"errors"
-	"fmt"
 	"slices"
 	"strings"
 )
@@ -12,18 +11,27 @@ func ShuntingYard(expression string) ([]string, error) {
 	var operatorStack []string
 	var operandStack []string
 
-	numericRange := "123456789"
+	numericRange := "0123456789"
+	currentNumber := ""
 
 	for _, s := range expression {
-
-		fmt.Println()
-		fmt.Println("operandStack: ", operandStack)
-		fmt.Println("operatorStack: ", operatorStack)
-		fmt.Println("[s]: ", string(s))
+		/*
+			fmt.Println()
+			fmt.Println("operandStack: ", operandStack)
+			fmt.Println("operatorStack: ", operatorStack)
+			fmt.Println("[s]: ", string(s))
+			fmt.Println("Current Number: ", currentNumber) */
 
 		if strings.Contains(numericRange, string(s)) {
-			operandStack = append(operandStack, string(s))
+			currentNumber += string(s)
+			if rune(expression[len(expression)-1]) == s {
+				operandStack = append(operandStack, currentNumber)
+				currentNumber = ""
+			}
 			continue
+		} else {
+			operandStack = append(operandStack, currentNumber)
+			currentNumber = ""
 		}
 
 		currentPrecedence, currentAssociativity, err := getPrecedenceInfo(string(s))
@@ -89,8 +97,6 @@ func ShuntingYard(expression string) ([]string, error) {
 		}
 
 	}
-
-	// Certo, aqui eu preciso adicionar todos os outros que restaram
 
 	operatorStack = slices.DeleteFunc(operatorStack, func(s string) bool {
 		return strings.TrimSpace(s) == ""

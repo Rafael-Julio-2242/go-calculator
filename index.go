@@ -7,7 +7,8 @@ import (
 
 func main() {
 
-	testExpression := "2+2*2/2"
+	testExpression := "8+2*5/2-3"
+	expectedExpression := "8 2 5 * 2 / + 3 -"
 
 	resultExpression, err := calc.ShuntingYard(testExpression)
 
@@ -16,6 +17,6 @@ func main() {
 		return
 	}
 
-	fmt.Println("Expected expression: 2 2 2 * 2 / +")
+	fmt.Println("Expected expression: ", expectedExpression)
 	fmt.Println("Result Expression: ", resultExpression)
 }
