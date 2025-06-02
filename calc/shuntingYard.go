@@ -16,10 +16,10 @@ func ShuntingYard(expression string) ([]string, error) {
 
 	for _, s := range expression {
 
-		fmt.Println("[s]: ", string(s))
 		fmt.Println()
 		fmt.Println("operandStack: ", operandStack)
 		fmt.Println("operatorStack: ", operatorStack)
+		fmt.Println("[s]: ", string(s))
 
 		if strings.Contains(numericRange, string(s)) {
 			operandStack = append(operandStack, string(s))
@@ -48,13 +48,41 @@ func ShuntingYard(expression string) ([]string, error) {
 		}
 
 		if currentPrecedence < lastPrecedence || (currentPrecedence == lastPrecedence && currentAssociativity == lastAssociativity && currentAssociativity == "left") {
-			// TODO O erro ta aqui
-			// Isso aqui precisa ter uma verificação pra tirar todo mundo que não bater a precedência corretamente!
 
 			value := operatorStack[len(operatorStack)-1]
 			operatorStack[len(operatorStack)-1] = ""
 			operatorStack = operatorStack[:len(operatorStack)-1]
 			operandStack = append(operandStack, value)
+
+			// Eu acho que aqui, possivelmente, pode dar algum problema alguma hora
+			if len(operatorStack) >= 1 {
+				for {
+
+					if len(operatorStack) <= 0 {
+						break
+					}
+
+					currentTop := operatorStack[len(operatorStack)-1]
+
+					currentTopPrecedence, currentTopAssociativity, errCurrentTop := getPrecedenceInfo(operatorStack[len(operatorStack)-1])
+
+					if errCurrentTop != nil {
+						return []string{""}, errors.New("error on getting precedence info")
+					}
+
+					if currentTopPrecedence > currentPrecedence || (currentTopPrecedence == currentPrecedence && currentTopAssociativity == currentAssociativity && currentAssociativity == "left") {
+
+						operatorStack[len(operatorStack)-1] = ""
+						operatorStack = operatorStack[:len(operatorStack)-1]
+						operandStack = append(operandStack, currentTop)
+
+					} else {
+						break
+					}
+				}
+
+			}
+
 			operatorStack = append(operatorStack, string(s))
 
 			continue
@@ -69,6 +97,9 @@ func ShuntingYard(expression string) ([]string, error) {
 	})
 
 	if len(operatorStack) >= 1 {
+
+		slices.Reverse(operatorStack)
+
 		operandStack = append(operandStack, operatorStack...)
 	}
 
