@@ -109,6 +109,10 @@ func ShuntingYard(expression string) ([]string, error) {
 		operandStack = append(operandStack, operatorStack...)
 	}
 
+	operandStack = slices.DeleteFunc(operandStack, func(s string) bool {
+		return strings.TrimSpace(s) == ""
+	})
+
 	return operandStack, nil
 }
 
