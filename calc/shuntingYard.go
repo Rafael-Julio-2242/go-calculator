@@ -15,12 +15,6 @@ func ShuntingYard(expression string) ([]string, error) {
 	currentNumber := ""
 
 	for _, s := range expression {
-		/*
-			fmt.Println()
-			fmt.Println("operandStack: ", operandStack)
-			fmt.Println("operatorStack: ", operatorStack)
-			fmt.Println("[s]: ", string(s))
-			fmt.Println("Current Number: ", currentNumber) */
 
 		if strings.Contains(numericRange, string(s)) {
 			currentNumber += string(s)
@@ -36,6 +30,23 @@ func ShuntingYard(expression string) ([]string, error) {
 
 		currentPrecedence, currentAssociativity, err := getPrecedenceInfo(string(s))
 
+		if currentPrecedence == -2 { // Significa que isso aqui é um fechamento de parêntese
+			for {
+				currentTop := operatorStack[len(operatorStack)-1]
+
+				if currentTop == "(" { // Desempilho ele e paro o loop
+					operatorStack[len(operatorStack)-1] = ""
+					operatorStack = operatorStack[:len(operatorStack)-1]
+					break
+				}
+
+				operatorStack[len(operatorStack)-1] = ""
+				operatorStack = operatorStack[:len(operatorStack)-1]
+				operandStack = append(operandStack, currentTop)
+			}
+			continue
+		}
+
 		if err != nil {
 			return []string{""}, err
 		}
@@ -45,9 +56,19 @@ func ShuntingYard(expression string) ([]string, error) {
 			continue
 		}
 
+		if string(s) == "(" {
+			operatorStack = append(operatorStack, string(s))
+			continue
+		}
+
 		lastIndex := len(operatorStack) - 1
 
 		lastPrecedence, lastAssociativity, _ := getPrecedenceInfo(operatorStack[lastIndex])
+
+		if lastPrecedence == -1 { // Significa que o topo da pilha é um parêntese
+			operatorStack = append(operatorStack, string(s))
+			continue
+		}
 
 		if currentPrecedence > lastPrecedence || (currentPrecedence == lastPrecedence && currentAssociativity == lastAssociativity && currentAssociativity == "right") {
 
@@ -128,6 +149,10 @@ func getPrecedenceInfo(r string) (int, string, error) {
 		return 2, "left", nil
 	case "-":
 		return 2, "left", nil
+	case "(":
+		return -1, "(", nil
+	case ")":
+		return -2, ")", nil
 	default:
 		return 0, "", errors.New("invalid operator informed")
 	}
